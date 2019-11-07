@@ -2,8 +2,7 @@ import time
 import sys
 import unittest
 
-from artiq.language.units import V
-from artiq.test.hardware_testbench import ControllerCase, GenericControllerCase
+from sipyco.test.generic_rpc import GenericRPCCase
 
 
 class GenericTdcTest:
@@ -86,16 +85,16 @@ class GenericTpzTest:
         self.cont.set_position_control_mode(test_vector)
         self.assertEqual(test_vector, self.cont.get_position_control_mode())
 
-    def test_ouput_volts(self):
-        for voltage in 5*V, 10*V, 15*V, \
-                round(self.cont.get_tpz_io_settings()[0])*V:
+    def test_output_volts(self):
+        for voltage in 5.0, 10.0, 15.0, \
+                round(self.cont.get_tpz_io_settings()[0]):
             with self.subTest(voltage=voltage):
                 test_vector = voltage
                 self.cont.set_output_volts(test_vector)
                 time.sleep(1)  # Wait for the output voltage to converge
                 self.assertAlmostEqual(test_vector,
                                        self.cont.get_output_volts(),
-                                       delta=0.03*V)
+                                       delta=0.03)
 
     def test_output_position(self):
         test_vector = 31000
@@ -124,60 +123,26 @@ class GenericTpzTest:
                                  self.cont.get_tpz_display_settings())
 
     def test_tpz_io_settings(self):
-        for v in 75*V, 100*V, 150*V:
+        for v in 75.0, 100.0, 150.0:
             with self.subTest(v=v):
                 test_vector = v, 1
                 self.cont.set_tpz_io_settings(*test_vector)
                 self.assertEqual(test_vector, self.cont.get_tpz_io_settings())
 
 
-class TestTdc(ControllerCase, GenericTdcTest):
+class TestTdcSim(GenericRPCCase, GenericTdcTest):
     def setUp(self):
-        ControllerCase.setUp(self)
-        self.start_controller("tdc")
-        self.cont = self.device_mgr.get("tdc")
-
-
-class TestTdcSim(GenericControllerCase, GenericTdcTest):
-    def get_device_db(self):
-        return {
-            "tdc": {
-                "type": "controller",
-                "host": "::1",
-                "port": 3255,
-                "command": (sys.executable.replace("\\", "\\\\")
+        GenericRPCCase.setUp(self)
+        command = (sys.executable.replace("\\", "\\\\")
                             + " -m thorlabs_tcube.aqctl_thorlabs_tcube "
-                            + "-p {port} -P tdc001 --simulation")
-            }
-        }
+                            + "-p 3255 -P tdc001 --simulation")
+        self.cont = self.start_server("tdc", command, 3255)
 
+
+class TestTpzSim(GenericRPCCase, GenericTpzTest):
     def setUp(self):
-        GenericControllerCase.setUp(self)
-        self.start_controller("tdc")
-        self.cont = self.device_mgr.get("tdc")
-
-
-class TestTpz(ControllerCase, GenericTpzTest):
-    def setUp(self):
-        ControllerCase.setUp(self)
-        self.start_controller("tpz")
-        self.cont = self.device_mgr.get("tpz")
-
-
-class TestTpzSim(GenericControllerCase, GenericTpzTest):
-    def get_device_db(self):
-        return {
-            "tpz": {
-                "type": "controller",
-                "host": "::1",
-                "port": 3255,
-                "command": (sys.executable.replace("\\", "\\\\")
+        GenericRPCCase.setUp(self)
+        command = (sys.executable.replace("\\", "\\\\")
                             + " -m thorlabs_tcube.aqctl_thorlabs_tcube "
-                            + "-p {port} -P tpz001 --simulation")
-            }
-        }
-
-    def setUp(self):
-        GenericControllerCase.setUp(self)
-        self.start_controller("tpz")
-        self.cont = self.device_mgr.get("tpz")
+                            + "-p 3255 -P tpz001 --simulation")
+        self.cont = self.start_server("tpz", command, 3255)
