@@ -956,7 +956,8 @@ class Tdc(_Tcube):
                                 [MGMSG.MOT_MOVE_HOMED, MGMSG.MOT_MOVE_STOPPED],
                                 1)
 
-    async def set_limit_switch_parameters(self, cw_hw_limit, ccw_hw_limit):
+    async def set_limit_switch_parameters(self, cw_hw_limit, ccw_hw_limit,
+            cw_sw_limit=0, ccw_sw_limit=0, sw_limit_mode=0x1):
         """Set the limit switch parameters.
 
         :param cw_hw_limit: The operation of clockwise hardware limit switch
@@ -982,23 +983,39 @@ class Tdc(_Tcube):
             bit set when limit switches have been physically swapped.
         :param ccw_hw_limit: The operation of counter clockwise hardware limit
             switch when contact is made.
+        :param cw_sw_limit: Clockwise software limit in position steps, as a
+            32 bit unsigned long. (Not applicable to TDC001 units)
+        :param ccw_sw_limit: Counter clockwise software limit in position steps
+            (scaling as for CW limit). (Not applicable to TDC001 units)
+        :param sw_limit_mode: Software limit switch mode
+
+            0x01 Ignore Limit
+
+            0x02 Stop Immediate at Limit
+
+            0x03 Profiled Stop at limit
+
+            0x80 Rotation Stage Limit (bitwise OR'd with one of the settings
+            above) (Not applicable to TDC001 units)
         """
-        payload = st.pack("<HHHLLH", 1, cw_hw_limit, ccw_hw_limit, 0, 0, 0)
+        payload = st.pack("<HHHLLH", 1, cw_hw_limit, ccw_hw_limit,
+                          cw_sw_limit, ccw_sw_limit, sw_limit_mode)
         await self.send(Message(MGMSG.MOT_SET_LIMSWITCHPARAMS, data=payload))
 
     async def get_limit_switch_parameters(self):
         """Get the limit switch parameters.
 
-        :return: A 2 int tuple containing the following in order: cw_hw_limit,
-         ccw_hw_limit. Cf. description in
+        :return: A 5 int tuple containing the following in order: cw_hw_limit,
+         ccw_hw_limit, cw_sw_limit, ccw_sw_limit, sw_limit_mode. Cf.
+         description in
          :py:meth:`set_limit_switch_parameters()
          <Tdc.set_limit_switch_parameters>`
          method.
-        :rtype: A 2 int tuple.
+        :rtype: A 5 int tuple.
         """
         get_msg = await self.send_request(MGMSG.MOT_REQ_LIMSWITCHPARAMS,
                                           [MGMSG.MOT_GET_LIMSWITCHPARAMS], 1)
-        return st.unpack("<HH", get_msg.data[2:6])
+        return st.unpack("<HHLLH", get_msg.data[2:])
 
     async def move_relative_memory(self):
         """Start a relative move of distance in the controller's memory
@@ -1416,12 +1433,17 @@ class TdcSim:
     def move_home(self):
         pass
 
-    def set_limit_switch_parameters(self, cw_hw_limit, ccw_hw_limit):
+    def set_limit_switch_parameters(self, cw_hw_limit, ccw_hw_limit,
+            cw_sw_limit=0, ccw_sw_limit=0, sw_limit_mode=0x1):
         self.cw_hw_limit = cw_hw_limit
         self.ccw_hw_limit = ccw_hw_limit
+        self.cw_sw_limit = cw_sw_limit
+        self.ccw_sw_limit = ccw_sw_limit
+        self.sw_limit_mode = sw_limit_mode
 
     def get_limit_switch_parameters(self):
-        return self.cw_hw_limit, self.ccw_hw_limit
+        return (self.cw_hw_limit, self.ccw_hw_limit, self.cw_sw_limit,
+                self.ccw_sw_limit, self.sw_limit_mode)
 
     def move_relative_memory(self):
         pass
