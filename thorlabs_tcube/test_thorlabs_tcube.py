@@ -52,7 +52,7 @@ class GenericTdcTest:
         self.assertEqual(test_vector, self.cont.get_home_parameters())
 
     def test_limit_switch_parameters(self):
-        test_vector = 2, 1
+        test_vector = 2, 1, 55, 56, 0x1
         self.cont.set_limit_switch_parameters(*test_vector)
         self.assertEqual(test_vector, self.cont.get_limit_switch_parameters())
 
