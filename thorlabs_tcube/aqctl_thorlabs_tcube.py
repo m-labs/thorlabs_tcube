@@ -30,9 +30,6 @@ def main():
     args = get_argparser().parse_args()
     common_args.init_logger_from_args(args)
 
-    if os.name == "nt":
-        asyncio.set_event_loop(asyncio.ProactorEventLoop())
-
     if not args.simulation and args.device is None:
         print("You need to specify either --simulation or -d/--device "
               "argument. Use --help for more information.")
