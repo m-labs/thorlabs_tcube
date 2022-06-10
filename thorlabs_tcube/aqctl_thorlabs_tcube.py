@@ -35,33 +35,38 @@ def main():
               "argument. Use --help for more information.")
         sys.exit(1)
 
-    product = args.product.lower()
-    if args.simulation:
-        if product == "tdc001":
-            dev = TdcSim()
-        elif product == "tpz001":
-            dev = TpzSim()
-        else:
-            print("Invalid product string (-P/--product), "
-                  "choose from tdc001 or tpz001")
-            sys.exit(1)
-    else:
-        if product == "tdc001":
-            dev = Tdc(args.device)
-        elif product == "tpz001":
-            dev = Tpz(args.device)
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(dev.get_tpz_io_settings())
-        else:
-            print("Invalid product string (-P/--product), "
-                  "choose from tdc001 or tpz001")
-            sys.exit(1)
-
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
-        simple_server_loop({product: dev},
-                           common_args.bind_address_from_args(args), args.port)
+        product = args.product.lower()
+        if args.simulation:
+            if product == "tdc001":
+                dev = TdcSim()
+            elif product == "tpz001":
+                dev = TpzSim()
+            else:
+                print("Invalid product string (-P/--product), "
+                      "choose from tdc001 or tpz001")
+                sys.exit(1)
+        else:
+            if product == "tdc001":
+                dev = Tdc(args.device)
+            elif product == "tpz001":
+                dev = Tpz(args.device)
+                loop.run_until_complete(dev.get_tpz_io_settings())
+            else:
+                print("Invalid product string (-P/--product), "
+                      "choose from tdc001 or tpz001")
+                sys.exit(1)
+
+        try:
+            simple_server_loop({product: dev},
+                               common_args.bind_address_from_args(args), args.port,
+                               loop=loop)
+        finally:
+            dev.close()
     finally:
-        dev.close()
+        loop.close()
 
 if __name__ == "__main__":
     main()
