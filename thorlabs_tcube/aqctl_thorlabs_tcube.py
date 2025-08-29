@@ -7,6 +7,7 @@ import asyncio
 
 from thorlabs_tcube.driver import Tdc, Tpz, TdcSim, TpzSim
 from sipyco.pc_rpc import simple_server_loop
+from sipyco.tools import SimpleSSLConfig
 from sipyco import common_args
 
 
@@ -21,7 +22,7 @@ def get_argparser():
     parser.add_argument("--simulation", action="store_true",
                         help="Put the driver in simulation mode, even if "
                              "--device is used.")
-    common_args.simple_network_args(parser, 3255)
+    common_args.simple_network_args(parser, 3255, ssl=True)
     common_args.verbosity_args(parser)
     return parser
 
@@ -37,6 +38,7 @@ def main():
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+    ssl_config = SimpleSSLConfig(*args.ssl) if args.ssl else None
     try:
         product = args.product.lower()
         if args.simulation:
@@ -62,7 +64,7 @@ def main():
         try:
             simple_server_loop({product: dev},
                                common_args.bind_address_from_args(args), args.port,
-                               loop=loop)
+                               loop=loop, ssl_config=ssl_config)
         finally:
             dev.close()
     finally:
