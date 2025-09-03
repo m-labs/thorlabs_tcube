@@ -1349,6 +1349,9 @@ class TpzSim:
     def get_tpz_io_settings(self):
         return self.voltage_limit, self.hub_analog_input
 
+    def ping(self):
+        return True
+
 
 class TdcSim:
     def close(self):
@@ -1506,3 +1509,6 @@ class TdcSim:
 
     def resume_end_of_move_messages(self):
         pass
+
+    def ping(self):
+        return True
