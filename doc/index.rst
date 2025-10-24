@@ -30,15 +30,15 @@ First, run the TDC001 controller::
 
     The hwgrep URL works on both Linux and Windows.
 
-Then, send commands to it via the ``artiq_rpctool`` utility::
+Then, send commands to it via the ``sipyco_rpctool`` utility::
 
-    $ artiq_rpctool ::1 3255 list-targets
+    $ sipyco_rpctool ::1 3255 list-targets
     Target(s):   tdc001
-    $ artiq_rpctool ::1 3255 call move_relative 10000 # will move forward
-    $ artiq_rpctool ::1 3255 call move_relative -10000 # will move backward
-    $ artiq_rpctool ::1 3255 call move_absolute 20000 # absolute move to 20000
-    $ artiq_rpctool ::1 3255 call move_home # will go back to home position
-    $ artiq_rpctool ::1 3255 call close # close the device
+    $ sipyco_rpctool ::1 3255 call move_relative 10000 # will move forward
+    $ sipyco_rpctool ::1 3255 call move_relative -10000 # will move backward
+    $ sipyco_rpctool ::1 3255 call move_absolute 20000 # absolute move to 20000
+    $ sipyco_rpctool ::1 3255 call move_home # will go back to home position
+    $ sipyco_rpctool ::1 3255 call close # close the device
 
 TPZ001 controller usage example
 +++++++++++++++++++++++++++++++
@@ -54,16 +54,16 @@ First, run the TPZ001 controller::
     See above for how to specify the USB Serial Number of the device instead of the
     /dev/ttyUSBx (or the COMx name).
 
-Then, send commands to it via the ``artiq_rpctool`` utility::
+Then, send commands to it via the ``sipyco_rpctool`` utility::
 
-    $ artiq_rpctool ::1 3255 list-targets
+    $ sipyco_rpctool ::1 3255 list-targets
     Target(s):   tpz001
-    $ artiq_rpctool ::1 3255 call set_output_volts 15 # set output voltage to 15 V
-    $ artiq_rpctool ::1 3255 call get_output_volts # read back output voltage
+    $ sipyco_rpctool ::1 3255 call set_output_volts 15 # set output voltage to 15 V
+    $ sipyco_rpctool ::1 3255 call get_output_volts # read back output voltage
     15
-    $ artiq_rpctool ::1 3255 call set_tpz_io_settings 150 1 # set maximum output voltage to 150 V
-    $ artiq_rpctool ::1 3255 call set_output_volts 150 # set output voltage to 150 V
-    $ artiq_rpctool ::1 3255 call close # close the device
+    $ sipyco_rpctool ::1 3255 call set_tpz_io_settings 150 1 # set maximum output voltage to 150 V
+    $ sipyco_rpctool ::1 3255 call set_output_volts 150 # set output voltage to 150 V
+    $ sipyco_rpctool ::1 3255 call close # close the device
 
 
 API
